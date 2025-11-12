@@ -13,7 +13,14 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://marketing-simulator-frontend.netlify.app/", // ← ADICIONE ESTA LINHA
+    "https://marketing-simulator-backend.onrender.com"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
