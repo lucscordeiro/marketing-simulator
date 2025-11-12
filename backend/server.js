@@ -14,12 +14,32 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://marketing-simulator-frontend.netlify.app", // ← ADICIONE ESTA LINHA
-    "https://marketing-simulator-backend.onrender.com"
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Permite requests de qualquer origem em desenvolvimento
+    if (!origin || process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // Em produção, permite apenas origens específicas
+    const allowedOrigins = [
+      "https://marketing-simulator-frontend.netlify.app",
+      "https://marketing-simulator-backend.onrender.com",
+      /\.netlify\.app$/,
+      /\.render\.com$/
+    ];
+    
+    if (allowedOrigins.some(pattern => {
+      if (typeof pattern === 'string') return origin === pattern;
+      return pattern.test(origin);
+    })) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
